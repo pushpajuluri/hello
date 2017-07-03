@@ -5,7 +5,7 @@
 //  Created by OMNIWYSE on 6/29/17.
 //  Copyright © 2017 myschool. All rights reserved.
 //
-
+///////for creation of models/////////////
 import UIKit
 class CategoriesModel{
     var catName = ""
