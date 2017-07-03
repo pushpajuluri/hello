@@ -10,7 +10,7 @@ import UIKit
 class CategoriesModel{
     var catName = ""
     var catId = ""
-    var caticon = ""
+    var caticon:UIImage?
     // var images = [UIImage(named: "accessories"),UIImage(named: "Phones"),UIImage(named: "clothing1"),UIImage(named: "Sports-I")]
 }
 class CategoriesViewController: UIViewController,UITableViewDataSource,UITableViewDelegate {
@@ -64,7 +64,7 @@ class CategoriesViewController: UIViewController,UITableViewDataSource,UITableVi
     }
    
       override func viewDidLoad() {
-   
+    plist()
         getlistofcatName()
         getlistofcaticon()
         self.title = "Categories"
@@ -92,21 +92,54 @@ class CategoriesViewController: UIViewController,UITableViewDataSource,UITableVi
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = mytableview.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as! Customcell
         
-        let subObj = self.categoriesArray[indexPath.row]
-        let subobj1 = self.imagesArray[indexPath.row]
+        let  obj = self.categoriesArray[indexPath.row]
+        let obj1 = self.imagesArray[indexPath.row]
        
         
         
-        cell.mylabel.text = subObj.catName
-        cell.myimage.image = subobj1.caticon
-        //increasing of label txt size dynamically
-       cell.mylabel.numberOfLines = 0
+        cell.mylabel.text = obj.catName
+        cell.myimage.image = obj1.caticon
+    //increasing of label txt size dynamically
+        cell.mylabel.numberOfLines = 0
         cell.mylabel.lineBreakMode = .byWordWrapping
-        
         cell.mylabel.frame.size.width = 300
         cell.mylabel.sizeToFit()
+    // Next button
+      //cell.nxtbtn.tag = imagesArray[indexPath.row]
+        //cell.nxtbtn.addTarget(self, action: , for: <#T##UIControlEvents#>)
         
+       // cell.nxtbtn.addTarget(self, action: #selector(CategoriesViewController.nxtbtntapped), for: .touchUpInside)
      return cell
     }
+    public func nxtbtntapped (){
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let productslistViewController = storyboard.instantiateViewController(withIdentifier: "ProductsListViewController") as! ProductsListViewController
+        self.navigationController?.pushViewController(productslistViewController, animated: true)
+    
+    
+    }
+   func plist(){
+    
+    let fileManager = FileManager.default
+        let docpath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first
+        let pathStr = docpath!+"/pushpa.plist"
+    if(fileManager.fileExists(atPath: pathStr)){
+        print(pathStr)
+        var catarray = NSArray(contentsOfFile: pathStr) as? NSMutableArray
+        catarray = NSMutableArray()
+        
+        let catdict = NSMutableDictionary()
+        catdict.setObject(categoriesArray, forKey: "categoriesArray" as NSCopying)
+        catarray?.add(catdict)
+        let plistxml = FileManager.default.contents(atPath: "pushpa.plist")
+        print (plistxml)
+        let fileStatus = catarray?.write(to: URL(fileURLWithPath:pathStr), atomically: true)
+        print("File status is \(fileStatus)")
+        print(catdict)
+        
+    }
+    
+    }
+    //let k = plist(named: "puhpa.plist")?.array
     
 }
