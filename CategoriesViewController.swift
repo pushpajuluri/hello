@@ -5,141 +5,193 @@
 //  Created by OMNIWYSE on 6/29/17.
 //  Copyright © 2017 myschool. All rights reserved.
 //
-///////for creation of models/////////////
+
 import UIKit
+
+class DisplayModel {
+    var heading = ""
+    var value = ""
+    var isImage = false
+    var otherData:Any?
+}
+class BannerModel {
+    var bannerimageUrl = ""
+    var bannerImageName:UIImage?
+    
+
+}
 class CategoriesModel{
     var catName = ""
     var catId = ""
-    var caticon:UIImage?
-    // var images = [UIImage(named: "accessories"),UIImage(named: "Phones"),UIImage(named: "clothing1"),UIImage(named: "Sports-I")]
+    var catIcon = ""
+    var products = [ProductModel]()
 }
-class CategoriesViewController: UIViewController,UITableViewDataSource,UITableViewDelegate {
+
+class ProductModel {
+    var productId = ""
+    var productName = ""
+    var productImg = ""
+    var  productDescription = ""
+    var productPrice = ""
+    
+    func getDisplayValues() -> [DisplayModel] {
+        var displayArray = [DisplayModel]()
+        
+        let displayModel4 = DisplayModel()
+        displayModel4.heading = ""
+        displayModel4.value = self.productImg
+        displayModel4.isImage = true
+        displayArray.append(displayModel4)
+        
+        let displayModel2 = DisplayModel()
+        displayModel2.heading = "Name"
+        displayModel2.value = self.productName
+        displayArray.append(displayModel2)
+
+        let displayModel3 = DisplayModel()
+        displayModel3.heading = "Description"
+        displayModel3.value = self.productDescription
+        displayArray.append(displayModel3)
 
         
-    @IBOutlet weak var mytableview: UITableView!
-    @IBOutlet weak var bagimg: UIImageView!
+        let displayModel1 = DisplayModel()
+        displayModel1.heading = "Price"
+        displayModel1.value = self.productPrice
+        displayArray.append(displayModel1)
+
+
+        return displayArray
+    }
+}
+
+
+class CategoriesViewController: UIViewController,UITableViewDataSource,UITableViewDelegate {
     
-       var categoriesArray = [CategoriesModel]()
-       var imagesArray = [CategoriesModel]()
+        @IBOutlet weak var mytableview: UITableView!
+        @IBOutlet weak var bannerImage: UIImageView!
+        @IBOutlet weak var myScrollView: UIScrollView!
+        var bannerImagesArray = [UIImage]()
+        var categoriesArray = [CategoriesModel]()
+        var productsArray = [ProductModel]()
+      var bannerArray = [BannerModel]()
+    // preparing array
+    func getbanner() -> [BannerModel]
+    {
+       // let image1  = UIImage(named: "bags2.jpg")
+       // let image2  = UIImage(named: "bags3.jpg")
+       let bannerobj = BannerModel()
+      bannerobj.bannerimageUrl = ""
+     bannerobj.bannerImageName =  UIImage(named: "bags2.jpg")
+    bannerArray.append(bannerobj)
+    let bannerobj1 = BannerModel()
+    bannerobj1.bannerimageUrl = ""
+    bannerobj1.bannerImageName = UIImage(named: "bags3.jpg")
+    bannerArray.append(bannerobj1)
+    return bannerArray
+}
     func getlistofcatName() -> [CategoriesModel]
     {
-        
-        let selectObj = CategoriesModel()
-        selectObj.catName = "Accessories"
-        categoriesArray.append(selectObj)
-        
-        let selectObj1 = CategoriesModel()
-        selectObj1.catName = "Electronics"
-        categoriesArray.append(selectObj1)
-        
-        let selectObj2 = CategoriesModel()
-        selectObj2.catName = "Fashion "
-        categoriesArray.append(selectObj2)
-        
-        let selectObj3 = CategoriesModel()
-        selectObj3.catName = "Sports & Fittness"
-        categoriesArray.append(selectObj3)
+        let path = Bundle.main.path(forResource: DATASET_NAME, ofType: "plist")
+        let catArrayFromFile = NSArray(contentsOfFile: path!) as! Array<Dictionary<String,Any>>
+        for dict in catArrayFromFile
+        {
+            let catModel = CategoriesModel()
+            catModel.catName = dict["catName"]! as! String
+            let img = dict["catIcon"]!
+            catModel.catIcon = img as! String
+            //Add products
+            let products = dict["products"]! as! Array<Dictionary<String,String>>
+            for  product in products
+              {
+                let proModel = ProductModel()
+                proModel.productName = product["productName"]! 
+                proModel.productId = product["productId"]! 
+                proModel.productImg = product["productImg"]!
+                proModel.productDescription = product["productDescription"]!
+                proModel.productPrice = product["productPrice"]!
+                catModel.products.append(proModel)
+              }
+            categoriesArray.append(catModel)
+        }
         return  categoriesArray
     }
     
-    func getlistofcaticon() -> [CategoriesModel]
+      override func viewDidLoad()
     {
-        
-        let selectObj = CategoriesModel()
-        selectObj.caticon = UIImage(named: "accessories")
-        imagesArray.append(selectObj)
-        
-        let selectObj1 = CategoriesModel()
-        selectObj1.caticon = UIImage(named: "Phones")
-        imagesArray.append(selectObj1)
-        
-        let selectObj2 = CategoriesModel()
-        selectObj2.caticon = UIImage(named: "clothing1")
-        imagesArray.append(selectObj2)
-        
-        let selectObj3 = CategoriesModel()
-        selectObj3.caticon = UIImage(named: "Sports-I")
-        imagesArray.append(selectObj3)
-        return  imagesArray
-    }
-   
-      override func viewDidLoad() {
-    plist()
-        getlistofcatName()
-        getlistofcaticon()
+        self.getlistofcatName()
+        self.getbanner()
         self.title = "Categories"
+        //navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         super.viewDidLoad()
-        // inserting the image programatically
-        bagimg.image = UIImage(named: "bags")
-        //let backgroundImage = UIImageView(frame: UIScreen.main.bounds)
-        //backgroundImage.image = UIImage(named: "cart")
-       // self.view.insertSubview(backgroundImage, at: 0)
-        // Do any additional setup after loading the view.
+        loadbannerView()
+    }
+    
+     // inserting the bannerimage
+    func loadbannerView()
+    {
+    
+        bannerImagesArray = [#imageLiteral(resourceName: "bags"),#imageLiteral(resourceName: "watch3"),#imageLiteral(resourceName: "earring"),#imageLiteral(resourceName: "Sports-I")]
+        for i in 0..<self.bannerArray.count
+        {
+            let imageveiw = UIImageView()
+            imageveiw.image =  bannerobj.bannerImageName//bannerImagesArray[i] //UIImage(named: bannerImagesArray[i])
+            
+            imageveiw.contentMode = .scaleAspectFill
+            var position = self.bannerImage.frame.width * CGFloat(i)
+            imageveiw.frame = CGRect(x: position, y: 0, width: self.myScrollView.frame.width, height: self.myScrollView.frame.height)
+            myScrollView.contentSize.width = myScrollView.frame.width * CGFloat(i+1)
+            myScrollView.addSubview(imageveiw)
+            position += self.myScrollView.frame.size.width
+            myScrollView.isPagingEnabled = true
+            myScrollView.contentSize = CGSize(width: position, height: (self.myScrollView.frame.size.height))
+        }
     }
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-    func numberOfSections(in tableView: UITableView) -> Int {
-    return 1
+    //MARK: TableView Datasource methods
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int
+    {
+    return categoriesArray.count
     }
     
-    
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return categoriesArray.count
-    }
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell
+    {
         let cell = mytableview.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as! Customcell
-        
-        let  obj = self.categoriesArray[indexPath.row]
-        let obj1 = self.imagesArray[indexPath.row]
-       
-        
-        
-        cell.mylabel.text = obj.catName
-        cell.myimage.image = obj1.caticon
-    //increasing of label txt size dynamically
-        cell.mylabel.numberOfLines = 0
-        cell.mylabel.lineBreakMode = .byWordWrapping
-        cell.mylabel.frame.size.width = 300
-        cell.mylabel.sizeToFit()
-    // Next button
-      //cell.nxtbtn.tag = imagesArray[indexPath.row]
-        //cell.nxtbtn.addTarget(self, action: , for: <#T##UIControlEvents#>)
-        
-       // cell.nxtbtn.addTarget(self, action: #selector(CategoriesViewController.nxtbtntapped), for: .touchUpInside)
-     return cell
+        let  catObj = self.categoriesArray[indexPath.row]
+        cell.mylabel.text = catObj.catName
+        cell.myimage.image = UIImage(named: catObj.catIcon)
+        cell.nxtbtn.tag = indexPath.row
+        let btnImage = UIImage(named: "downArrow")
+        cell.nxtbtn.setImage(btnImage , for: UIControlState.normal)
+// cell.nxtbtn.addTarget(self, action: #selector(ProductsListViewController.addproduct), for: .touchUpInside)
+//increasing of label txt size dynamically
+//        cell.mylabel.numberOfLines = 0
+//        cell.mylabel.lineBreakMode = .byWordWrapping
+//        cell.mylabel.frame.size.width = 300
+//        cell.mylabel.sizeToFit()
+        return cell
     }
-    public func nxtbtntapped (){
+    
+   
+  /*  func addproduct(btn:UIButton)
+    {
+        print("tapped number \(btn.tag)")
+        
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let productslistViewController = storyboard.instantiateViewController(withIdentifier: "ProductsListViewController") as! ProductsListViewController
+        productslistViewController.catObj = self.categoriesArray[nxtbtn.tag]
+        
+        
         self.navigationController?.pushViewController(productslistViewController, animated: true)
-    
-    
-    }
-   func plist(){
-    
-    let fileManager = FileManager.default
-        let docpath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first
-        let pathStr = docpath!+"/pushpa.plist"
-    if(fileManager.fileExists(atPath: pathStr)){
-        print(pathStr)
-        var catarray = NSArray(contentsOfFile: pathStr) as? NSMutableArray
-        catarray = NSMutableArray()
         
-        let catdict = NSMutableDictionary()
-        catdict.setObject(categoriesArray, forKey: "categoriesArray" as NSCopying)
-        catarray?.add(catdict)
-        let plistxml = FileManager.default.contents(atPath: "pushpa.plist")
-        print (plistxml)
-        let fileStatus = catarray?.write(to: URL(fileURLWithPath:pathStr), atomically: true)
-        print("File status is \(fileStatus)")
-        print(catdict)
-        
-    }
+    }*/
     
-    }
-    //let k = plist(named: "puhpa.plist")?.array
-    
+func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath)
+  {
+     let  catObj = self.categoriesArray[indexPath.row]
+     let storyboard = UIStoryboard(name: "Main", bundle: nil)
+     let productslistViewController = storyboard.instantiateViewController(withIdentifier: "ProductListCollectionViewController") as! ProductListCollectionViewController
+     productslistViewController.selectedcat = catObj
+         self.navigationController?.pushViewController(productslistViewController, animated: true)
+  }
 }
+
